@@ -1,0 +1,186 @@
+<div class="gift-list-container" *ngIf="recipient">
+  <div class="gift-list-content">
+    <div class="header">
+      <button class="back-btn" (click)="backToDashboard()">← Back</button>
+      <h1 class="page-title">{{ recipient.name }}'s Gift List</h1>
+      <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
+        +
+      </button>
+    </div>
+
+    <div class="budget-summary">
+      <div class="budget-info">
+        <div class="budget-amounts">
+          <span class="spent">${{ recipient.spent.toFixed(2) }}</span>
+          <span class="total">/ ${{ recipient.budget.toFixed(2) }}</span>
+        </div>
+        <div class="budget-percentage">{{ getBudgetPercentage().toFixed(0) }}% used</div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div
+          class="progress-bar-fill"
+          [style.width.%]="getBudgetPercentage()"
+          [class.over-budget]="getBudgetPercentage() > 100">
+        </div>
+      </div>
+
+      <div class="budget-remaining">
+        <span class="remaining-label">Remaining:</span>
+        <span class="remaining-amount" [class.negative]="getRemainingBudget() < 0">
+          ${{ getRemainingBudget().toFixed(2) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="gifts-section" *ngIf="recipient.gifts.length > 0">
+      <h2 class="section-title">Gift List</h2>
+      <div class="gifts-list">
+        <div class="gift-card" *ngFor="let gift of recipient.gifts">
+          <div class="gift-info">
+            <h3 class="gift-name">{{ gift.name }}</h3>
+            <span class="gift-price">${{ gift.price.toFixed(2) }}</span>
+          </div>
+          <div class="gift-actions">
+            <button class="btn-edit-gift" (click)="editGift(gift)" title="Edit">
+              ✏️
+            </button>
+            <button class="btn-delete-gift" (click)="deleteGift(gift.id)" title="Delete">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="recipient.gifts.length === 0">
+      <p class="empty-message">🎁 No gifts added yet. Add your first gift above!</p>
+    </div>
+
+    <!-- Add/Edit Gift Modal -->
+    <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ isEditMode ? 'Edit Gift' : 'Add New Gift' }}</h2>
+          <button class="modal-close-btn" (click)="closeModal()">×</button>
+        </div>
+
+        <form (submit)="addGift($event)" class="modal-form">
+          <div class="modal-form-group">
+            <label for="modalGiftName" class="modal-label">
+              Gift Name <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="modalGiftName"
+              name="giftName"
+              [(ngModel)]="giftName"
+              class="modal-input"
+              placeholder="Enter gift name"
+              required
+            />
+          </div>
+
+          <div class="modal-form-group">
+            <label for="modalGiftPrice" class="modal-label">
+              Price <span class="required">*</span>
+            </label>
+            <input
+              type="number"
+              id="modalGiftPrice"
+              name="giftPrice"
+              [(ngModel)]="giftPrice"
+              class="modal-input"
+              placeholder="Enter price"
+              min="0"
+              step="0.01"
+              required
+            />
+          </div>
+
+          <div class="modal-form-group">
+            <label for="modalStoreName" class="modal-label">
+              Store Name <span class="optional-label">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="modalStoreName"
+              name="storeName"
+              [(ngModel)]="storeName"
+              class="modal-input"
+              placeholder="Enter store name"
+            />
+          </div>
+
+          <div class="modal-form-group">
+            <label for="modalUrl" class="modal-label">
+              URL <span class="optional-label">(Optional)</span>
+            </label>
+            <input
+              type="url"
+              id="modalUrl"
+              name="url"
+              [(ngModel)]="url"
+              class="modal-input"
+              placeholder="Enter product URL"
+            />
+          </div>
+
+          <div class="modal-buttons">
+            <button type="button" class="modal-btn-cancel" (click)="closeModal()">
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn-submit">
+              {{ isEditMode ? 'Update Gift' : 'Add Gift' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle-btn" (click)="toggleChat()" [class.active]="showChat">
+      💬 Gift Suggestions
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chat-window" [class.show]="showChat">
+      <div class="chat-header">
+        <h3>Gift Suggestion Assistant</h3>
+        <button class="chat-close-btn" (click)="toggleChat()">×</button>
+      </div>
+
+      <div class="chat-messages">
+        <div *ngFor="let message of chatMessages" class="message" [class.user-message]="message.type === 'user'" [class.bot-message]="message.type === 'bot'">
+          <div class="message-bubble">
+            <p class="message-text">{{ message.text }}</p>
+
+            <!-- Gift Suggestions -->
+            <div *ngIf="message.suggestions && message.suggestions.length > 0" class="suggestions">
+              <div *ngFor="let suggestion of message.suggestions" class="suggestion-item">
+                <div class="suggestion-info">
+                  <span class="suggestion-name">{{ suggestion.name }}</span>
+                  <span class="suggestion-price">${{ suggestion.estimatedPrice.toFixed(2) }}</span>
+                </div>
+                <button class="btn-add-suggestion" (click)="addSuggestedGift(suggestion)">
+                  + Add to List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <input
+          type="text"
+          [(ngModel)]="userInput"
+          (keyup.enter)="sendMessage()"
+          class="chat-input"
+          placeholder="Ask for gift suggestions..."
+        />
+        <button class="chat-send-btn" (click)="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>

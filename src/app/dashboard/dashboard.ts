@@ -56,4 +56,8 @@ export class Dashboard implements OnInit {
       this.budgetService.deleteRecipient(id);
     }
   }
+
+  viewGiftList(id: string) {
+    this.router.navigate(['/gift-list', id]);
+  }
 }

@@ -1,10 +1,23 @@
 import { Injectable, signal, computed } from '@angular/core';
 
+export interface Gift {
+  id: string;
+  name: string;
+  price: number;
+  recipientId: string;
+  storeName?: string;
+  url?: string;
+}
+
 export interface Recipient {
   id: string;
   name: string;
   budget: number;
   spent: number;
+  gifts: Gift[];
+  age?: number;
+  gender?: string;
+  interests?: string;
 }
 
 @Injectable({
@@ -46,5 +59,48 @@ export class Budget {
 
   deleteRecipient(id: string) {
     this.recipients.update(recipients => recipients.filter(r => r.id !== id));
+  }
+
+  addGift(recipientId: string, gift: Gift) {
+    this.recipients.update(recipients =>
+      recipients.map(r => {
+        if (r.id === recipientId) {
+          const updatedGifts = [...r.gifts, gift];
+          const totalSpent = updatedGifts.reduce((sum, g) => sum + g.price, 0);
+          return { ...r, gifts: updatedGifts, spent: totalSpent };
+        }
+        return r;
+      })
+    );
+  }
+
+  updateGift(recipientId: string, giftId: string, updates: Partial<Gift>) {
+    this.recipients.update(recipients =>
+      recipients.map(r => {
+        if (r.id === recipientId) {
+          const updatedGifts = r.gifts.map(g => g.id === giftId ? { ...g, ...updates } : g);
+          const totalSpent = updatedGifts.reduce((sum, g) => sum + g.price, 0);
+          return { ...r, gifts: updatedGifts, spent: totalSpent };
+        }
+        return r;
+      })
+    );
+  }
+
+  deleteGift(recipientId: string, giftId: string) {
+    this.recipients.update(recipients =>
+      recipients.map(r => {
+        if (r.id === recipientId) {
+          const updatedGifts = r.gifts.filter(g => g.id !== giftId);
+          const totalSpent = updatedGifts.reduce((sum, g) => sum + g.price, 0);
+          return { ...r, gifts: updatedGifts, spent: totalSpent };
+        }
+        return r;
+      })
+    );
+  }
+
+  getRecipientById(id: string): Recipient | undefined {
+    return this.recipients().find(r => r.id === id);
   }
 }
