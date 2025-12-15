@@ -1,0 +1,79 @@
+<div class="dashboard-container">
+  <div class="dashboard-content">
+    <div class="greeting-section">
+      <h1 class="greeting">Hi {{ budgetService.firstName() }}!</h1>
+      <div class="christmas-countdown">
+        <div class="countdown-icon">🎄</div>
+        <div class="countdown-text">
+          <span class="countdown-number">{{ daysUntilChristmas() }}</span>
+          <span class="countdown-label">{{ daysUntilChristmas() === 1 ? 'day' : 'days' }} until Christmas!</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="budget-section">
+      <h2 class="budget-title">Total Budget</h2>
+      <div class="budget-info">
+        <div class="budget-amounts">
+          <span class="spent">${{ budgetService.totalSpent().toFixed(2) }}</span>
+          <span class="total">/ ${{ budgetService.totalBudget().toFixed(2) }}</span>
+        </div>
+        <div class="budget-percentage">{{ budgetService.budgetPercentageUsed().toFixed(0) }}% used</div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div
+          class="progress-bar-fill"
+          [style.width.%]="budgetService.budgetPercentageUsed()"
+          [class.over-budget]="budgetService.budgetPercentageUsed() > 100">
+        </div>
+      </div>
+
+      <div class="budget-remaining">
+        <span class="remaining-label">Remaining:</span>
+        <span class="remaining-amount" [class.negative]="budgetService.budgetRemaining() < 0">
+          ${{ budgetService.budgetRemaining().toFixed(2) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="recipients-section" *ngIf="budgetService.recipients().length > 0">
+      <h2 class="recipients-title">Recipients</h2>
+      <div class="recipients-list">
+        <div class="recipient-card" *ngFor="let recipient of budgetService.recipients()">
+          <div class="recipient-header">
+            <h3 class="recipient-name">{{ recipient.name }}</h3>
+            <div class="recipient-actions">
+              <button class="btn-edit" (click)="editRecipient(recipient.id)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-delete" (click)="deleteRecipient(recipient.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </div>
+          <div class="recipient-budget-row">
+            <span class="budget-label">Budget:</span>
+            <span class="recipient-budget">${{ recipient.budget.toFixed(2) }}</span>
+          </div>
+          <div class="recipient-spent">
+            <span class="spent-label">Spent:</span>
+            <span class="spent-value">${{ recipient.spent.toFixed(2) }}</span>
+          </div>
+          <div class="recipient-progress-bar">
+            <div
+              class="recipient-progress-fill"
+              [style.width.%]="recipient.budget > 0 ? (recipient.spent / recipient.budget) * 100 : 0"
+              [class.over-budget]="recipient.spent > recipient.budget">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="add-recipient-btn" (click)="addRecipient()">
+      <span class="btn-icon">+</span>
+      <span class="btn-text">Add Recipient</span>
+    </button>
+  </div>
+</div>

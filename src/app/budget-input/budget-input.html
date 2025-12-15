@@ -1,0 +1,89 @@
+<div class="budget-input-container">
+  <!-- Animated snowflakes background -->
+  <div class="snowflakes" aria-hidden="true">
+    @for (flake of snowflakes; track $index) {
+      <div class="snowflake">❅</div>
+    }
+  </div>
+
+  <!-- Main content -->
+  <div class="form-wrapper">
+    <div class="form-card">
+      <!-- Header -->
+      <div class="form-header">
+        <div class="gift-icon">🎁</div>
+        <h1 class="form-title">Let's Get Started!</h1>
+        <p class="form-subtitle">Tell us a bit about your holiday budget</p>
+      </div>
+
+      <!-- Form -->
+      <form class="budget-form">
+        <!-- First Name Input -->
+        <div class="form-group">
+          <label for="firstName" class="form-label">
+            <svg class="label-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+            </svg>
+            First Name
+          </label>
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="firstName"
+            name="firstName"
+            class="form-input"
+            placeholder="Enter your first name"
+            required
+          />
+        </div>
+
+        <!-- Budget Input -->
+        <div class="form-group">
+          <label for="budget" class="form-label">
+            <svg class="label-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+            </svg>
+            Total Budget
+          </label>
+          <div class="input-wrapper">
+            <span class="currency-symbol">$</span>
+            <input
+              type="number"
+              id="budget"
+              [(ngModel)]="budget"
+              name="budget"
+              class="form-input budget-input"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-button" (click)="onSubmit($event)">
+          <span>Submit</span>
+          <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Decorative ornaments -->
+      <div class="ornaments">
+        <div class="ornament ornament-red"></div>
+        <div class="ornament ornament-green"></div>
+        <div class="ornament ornament-gold"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Christmas lights decoration -->
+  <div class="christmas-lights">
+    @for (light of lights; track $index) {
+      <div class="light" [style.animation-delay]="light.delay"></div>
+    }
+  </div>
+</div>

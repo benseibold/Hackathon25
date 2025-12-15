@@ -1,0 +1,109 @@
+<div class="profile-container">
+  <div class="profile-content">
+    <h1 class="profile-title">{{ isEditMode ? 'Edit Recipient' : 'Add Recipient' }}</h1>
+    <p class="profile-subtitle">{{ isEditMode ? 'Update recipient information' : 'Tell us about the special person on your list' }}</p>
+
+    <form (submit)="onSubmit($event)" class="profile-form">
+      <div class="form-group">
+        <label for="name" class="form-label">
+          Name <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          [(ngModel)]="name"
+          class="form-input"
+          placeholder="Enter name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="budget" class="form-label">
+          Budget <span class="required">*</span>
+        </label>
+        <input
+          type="number"
+          id="budget"
+          name="budget"
+          [(ngModel)]="budget"
+          class="form-input"
+          placeholder="Enter budget amount"
+          min="0"
+          step="0.01"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="age" class="form-label">
+          Age <span class="optional">(Optional)</span>
+        </label>
+        <input
+          type="number"
+          id="age"
+          name="age"
+          [(ngModel)]="age"
+          class="form-input"
+          placeholder="Enter age"
+          min="0"
+          max="18"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Gender <span class="optional">(Optional)</span>
+        </label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="gender"
+              value="male"
+              [(ngModel)]="gender"
+            />
+            <span class="radio-label">Male</span>
+          </label>
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="gender"
+              value="female"
+              [(ngModel)]="gender"
+            />
+            <span class="radio-label">Female</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="interests" class="form-label">
+          Interests <span class="optional">(Optional)</span>
+          <span class="tooltip-container">
+            <span class="info-icon">ℹ️</span>
+            <span class="tooltip-text">Placeholder</span>
+          </span>
+        </label>
+        <textarea
+          id="interests"
+          name="interests"
+          [(ngModel)]="interests"
+          class="form-textarea"
+          placeholder="e.g., legos, sports, horses, reading..."
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-submit">
+          {{ isEditMode ? 'Update Recipient' : 'Add Recipient' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
