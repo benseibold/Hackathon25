@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore } from '@angular/fire/firestore';
+import { collection, Firestore } from '@angular/fire/firestore';
 
 
 @Injectable({
@@ -7,4 +7,8 @@ import { Firestore } from '@angular/fire/firestore';
 })
 export class FirebaseService {
   firestore = inject(Firestore);
+
+  private itemsCollection = collection(this.firestore, 'items');
+
+  saveUser()
 }
