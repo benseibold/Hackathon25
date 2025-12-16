@@ -19,11 +19,6 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.calculateDaysUntilChristmas();
-
-    // Redirect to budget input if no user data
-    if (!this.budgetService.firstName()) {
-      this.router.navigate(['/budget-input']);
-    }
   }
 
   calculateDaysUntilChristmas() {

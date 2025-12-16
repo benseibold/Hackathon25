@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Angular 21 application for creating budgets and tracking spending on Christmas lists for different recipients. The app helps users manage their holiday gift-giving by organizing recipients, setting budgets, and monitoring expenses.
 
-The project uses standalone components (no NgModules), Vitest for unit testing, and Tailwind CSS v4 for styling.
+The project uses standalone components (no NgModules), Vitest for unit testing, Angular Material for UI components, Tailwind CSS v4 for styling, and Firebase/Firestore for backend services.
 
 ## Development Commands
 
@@ -53,6 +53,12 @@ ng generate --help          # See all available schematics
 - Uses Tailwind CSS v4 (configured via [.postcssrc.json](.postcssrc.json))
 - Global styles in [src/styles.css](src/styles.css)
 - Component-specific styles in component `.css` files
+
+### Firebase Integration
+- Firebase and AngularFire are configured in [src/app/app.config.ts](src/app/app.config.ts)
+- Environment configuration in [src/environments/environment.ts](src/environments/environment.ts)
+- Providers configured for Firestore and Auth
+- Update Firebase config in environment files with your project credentials from Firebase Console
 
 ### Testing
 - Test framework: Vitest (not Karma/Jasmine)
