@@ -1,4 +1,37 @@
 <div class="gift-list-container" *ngIf="recipient">
+  <!-- Snowflakes -->
+  <div class="snowflakes">
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+  </div>
+
+  <!-- Christmas Lights -->
+  <div class="christmas-lights">
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+  </div>
+
   <div class="gift-list-content">
     <div class="header">
       <button class="back-btn" (click)="backToDashboard()">← Back</button>
@@ -37,9 +70,14 @@
       <h2 class="section-title">Gift List</h2>
       <div class="gifts-list">
         <div class="gift-card" *ngFor="let gift of recipient.gifts">
+          <img *ngIf="gift.imageUrl" [src]="gift.imageUrl" [alt]="gift.name" class="gift-image" />
           <div class="gift-info">
             <h3 class="gift-name">{{ gift.name }}</h3>
-            <span class="gift-price">${{ gift.price.toFixed(2) }}</span>
+            <div class="gift-details">
+              <span class="gift-price">${{ gift.price.toFixed(2) }}</span>
+              <span class="gift-store" *ngIf="gift.storeName">{{ gift.storeName }}</span>
+            </div>
+            <a *ngIf="gift.url" [href]="gift.url" target="_blank" class="gift-url">View Product</a>
           </div>
           <div class="gift-actions">
             <button class="btn-edit-gift" (click)="editGift(gift)" title="Edit">
@@ -126,6 +164,20 @@
             />
           </div>
 
+          <div class="modal-form-group">
+            <label for="modalImageUrl" class="modal-label">
+              Image URL <span class="optional-label">(Optional)</span>
+            </label>
+            <input
+              type="url"
+              id="modalImageUrl"
+              name="imageUrl"
+              [(ngModel)]="imageUrl"
+              class="modal-input"
+              placeholder="Enter product image URL"
+            />
+          </div>
+
           <div class="modal-buttons">
             <button type="button" class="modal-btn-cancel" (click)="closeModal()">
               Cancel
@@ -158,9 +210,14 @@
             <!-- Gift Suggestions -->
             <div *ngIf="message.suggestions && message.suggestions.length > 0" class="suggestions">
               <div *ngFor="let suggestion of message.suggestions" class="suggestion-item">
+                <img *ngIf="suggestion.imageUrl" [src]="suggestion.imageUrl" [alt]="suggestion.name" class="suggestion-image" />
                 <div class="suggestion-info">
                   <span class="suggestion-name">{{ suggestion.name }}</span>
-                  <span class="suggestion-price">${{ suggestion.estimatedPrice.toFixed(2) }}</span>
+                  <div class="suggestion-details">
+                    <span class="suggestion-price">${{ suggestion.estimatedPrice.toFixed(2) }}</span>
+                    <span class="suggestion-store" *ngIf="suggestion.storeName">{{ suggestion.storeName }}</span>
+                  </div>
+                  <a *ngIf="suggestion.url" [href]="suggestion.url" target="_blank" class="suggestion-url">View Product</a>
                 </div>
                 <button class="btn-add-suggestion" (click)="addSuggestedGift(suggestion)">
                   + Add to List

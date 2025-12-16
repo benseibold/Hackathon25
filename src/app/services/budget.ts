@@ -7,6 +7,7 @@ export interface Gift {
   recipientId: string;
   storeName?: string;
   url?: string;
+  imageUrl?: string;
 }
 
 export interface Recipient {

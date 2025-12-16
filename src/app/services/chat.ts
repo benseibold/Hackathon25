@@ -4,6 +4,9 @@ import { Recipient } from './budget';
 export interface GiftSuggestion {
   name: string;
   estimatedPrice: number;
+  storeName?: string;
+  url?: string;
+  imageUrl?: string;
 }
 
 export interface ChatMessage {
@@ -18,100 +21,117 @@ export interface ChatMessage {
   providedIn: 'root',
 })
 export class Chat {
+  private readonly ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your API key
+  private readonly API_URL = 'https://api.anthropic.com/v1/messages';
 
-  generateGiftSuggestions(recipient: Recipient, userMessage?: string): ChatMessage {
-    const suggestions: GiftSuggestion[] = [];
+  async generateGiftSuggestions(recipient: Recipient, userMessage?: string): Promise<ChatMessage> {
     let responseText = '';
-
-    // Generate suggestions based on recipient demographics
     const age = recipient.age || 0;
-    const gender = recipient.gender?.toLowerCase() || '';
-    const interests = recipient.interests?.toLowerCase() || '';
+    const gender = recipient.gender || '';
+    const interests = recipient.interests || '';
     const budget = recipient.budget;
 
-    // Check for specific interests first
-    if (interests.includes('lego')) {
-      suggestions.push({ name: 'LEGO Set', estimatedPrice: Math.min(budget * 0.3, 50) });
-    }
-    if (interests.includes('sport') || interests.includes('soccer') || interests.includes('basketball')) {
-      suggestions.push({ name: 'Sports Equipment', estimatedPrice: Math.min(budget * 0.25, 40) });
-    }
-    if (interests.includes('read') || interests.includes('book')) {
-      suggestions.push({ name: 'Book Collection', estimatedPrice: Math.min(budget * 0.2, 30) });
-    }
-    if (interests.includes('art') || interests.includes('draw') || interests.includes('paint')) {
-      suggestions.push({ name: 'Art Supply Set', estimatedPrice: Math.min(budget * 0.3, 45) });
-    }
-    if (interests.includes('music') || interests.includes('guitar') || interests.includes('piano')) {
-      suggestions.push({ name: 'Musical Instrument Accessory', estimatedPrice: Math.min(budget * 0.35, 60) });
-    }
-    if (interests.includes('video game') || interests.includes('gaming')) {
-      suggestions.push({ name: 'Video Game', estimatedPrice: Math.min(budget * 0.4, 60) });
-    }
-    if (interests.includes('horse')) {
-      suggestions.push({ name: 'Horse Riding Gear', estimatedPrice: Math.min(budget * 0.4, 70) });
-    }
-
-    // Age-based suggestions
-    if (age > 0) {
-      if (age >= 3 && age <= 7) {
-        if (suggestions.length < 3) {
-          suggestions.push({ name: 'Educational Toy', estimatedPrice: Math.min(budget * 0.25, 35) });
-          suggestions.push({ name: 'Plush Toy', estimatedPrice: Math.min(budget * 0.15, 20) });
-        }
-      } else if (age >= 8 && age <= 12) {
-        if (suggestions.length < 3) {
-          suggestions.push({ name: 'Board Game', estimatedPrice: Math.min(budget * 0.3, 40) });
-          suggestions.push({ name: 'Science Kit', estimatedPrice: Math.min(budget * 0.35, 50) });
-        }
-      } else if (age >= 13 && age <= 17) {
-        if (suggestions.length < 3) {
-          suggestions.push({ name: 'Headphones', estimatedPrice: Math.min(budget * 0.4, 80) });
-          suggestions.push({ name: 'Gift Card', estimatedPrice: Math.min(budget * 0.3, 50) });
-        }
-      } else if (age >= 18) {
-        if (suggestions.length < 3) {
-          suggestions.push({ name: 'Gift Card', estimatedPrice: Math.min(budget * 0.3, 50) });
-          suggestions.push({ name: 'Experience Voucher', estimatedPrice: Math.min(budget * 0.5, 100) });
-        }
-      }
-    }
-
-    // Gender-based suggestions (if no interests provided)
-    if (suggestions.length < 3 && gender) {
-      if (gender === 'male') {
-        suggestions.push({ name: 'Tool Set', estimatedPrice: Math.min(budget * 0.4, 60) });
-      } else if (gender === 'female') {
-        suggestions.push({ name: 'Jewelry', estimatedPrice: Math.min(budget * 0.4, 60) });
-      }
-    }
-
-    // Default suggestions if nothing else matched
-    if (suggestions.length === 0) {
-      suggestions.push({ name: 'Gift Card', estimatedPrice: Math.min(budget * 0.3, 50) });
-      suggestions.push({ name: 'Cozy Blanket', estimatedPrice: Math.min(budget * 0.25, 40) });
-      suggestions.push({ name: 'Gourmet Chocolate Box', estimatedPrice: Math.min(budget * 0.15, 25) });
-    }
-
-    // Limit to 3 suggestions
-    const finalSuggestions = suggestions.slice(0, 3);
-
-    // Generate response text
+    // Build search query based on recipient info
+    let searchQuery = `Christmas gift ideas`;
     if (interests) {
-      responseText = `Based on ${recipient.name}'s interest in ${interests}, here are some gift ideas:`;
-    } else if (age > 0) {
-      responseText = `Here are some gift suggestions for ${recipient.name} (age ${age}):`;
-    } else {
-      responseText = `Here are some gift suggestions for ${recipient.name}:`;
+      searchQuery += ` for someone who likes ${interests}`;
     }
+    if (age > 0) {
+      searchQuery += ` age ${age}`;
+    }
+    if (gender) {
+      searchQuery += ` ${gender}`;
+    }
+    searchQuery += ` under $${budget}`;
 
-    return {
-      id: Date.now().toString(),
-      type: 'bot',
-      text: responseText,
-      timestamp: new Date(),
-      suggestions: finalSuggestions
-    };
+    try {
+      const response = await fetch(this.API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 2048,
+          messages: [{
+            role: 'user',
+            content: `Search the web for "${searchQuery}" and provide exactly 5 specific gift product suggestions with real prices, store names, URLs, and product image URLs. Format your response as a JSON array with this structure:
+[
+  {
+    "name": "Product name",
+    "estimatedPrice": price_as_number,
+    "storeName": "Store name",
+    "url": "Product URL",
+    "imageUrl": "Product image URL"
+  }
+]
+
+Make sure to find real products that are currently available for purchase online with actual product images. Only respond with the JSON array, nothing else.`
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API call failed');
+      }
+
+      const data = await response.json();
+      const content = data.content[0].text;
+
+      // Parse the JSON response
+      const suggestions: GiftSuggestion[] = JSON.parse(content);
+
+      // Limit to 5 suggestions
+      const finalSuggestions = suggestions.slice(0, 5);
+
+      responseText = `I found these gift suggestions for ${recipient.name}:`;
+
+      return {
+        id: Date.now().toString(),
+        type: 'bot',
+        text: responseText,
+        timestamp: new Date(),
+        suggestions: finalSuggestions
+      };
+
+    } catch (error) {
+      console.error('Error fetching gift suggestions:', error);
+
+      // Fallback to mock data if API fails
+      const fallbackSuggestions: GiftSuggestion[] = [
+        {
+          name: 'Gift Card',
+          estimatedPrice: Math.min(budget * 0.3, 50),
+          storeName: 'Amazon',
+          url: 'https://amazon.com',
+          imageUrl: 'https://via.placeholder.com/150?text=Gift+Card'
+        },
+        {
+          name: 'Cozy Blanket',
+          estimatedPrice: Math.min(budget * 0.25, 40),
+          storeName: 'Target',
+          url: 'https://target.com',
+          imageUrl: 'https://via.placeholder.com/150?text=Blanket'
+        },
+        {
+          name: 'Board Game',
+          estimatedPrice: Math.min(budget * 0.3, 45),
+          storeName: 'Walmart',
+          url: 'https://walmart.com',
+          imageUrl: 'https://via.placeholder.com/150?text=Board+Game'
+        }
+      ];
+
+      return {
+        id: Date.now().toString(),
+        type: 'bot',
+        text: 'Here are some gift suggestions (API unavailable, showing defaults):',
+        timestamp: new Date(),
+        suggestions: fallbackSuggestions
+      };
+    }
   }
 
   getWelcomeMessage(recipient: Recipient): ChatMessage {

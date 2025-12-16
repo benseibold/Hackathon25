@@ -23,6 +23,7 @@ export class GiftList implements OnInit {
   giftPrice: number | null = null;
   storeName = '';
   url = '';
+  imageUrl = '';
 
   // Chat functionality
   chatMessages: ChatMessage[] = [];
@@ -67,6 +68,7 @@ export class GiftList implements OnInit {
     this.giftPrice = null;
     this.storeName = '';
     this.url = '';
+    this.imageUrl = '';
   }
 
   editGift(gift: Gift) {
@@ -76,6 +78,7 @@ export class GiftList implements OnInit {
     this.giftPrice = gift.price;
     this.storeName = gift.storeName || '';
     this.url = gift.url || '';
+    this.imageUrl = gift.imageUrl || '';
     this.showModal = true;
   }
 
@@ -89,7 +92,8 @@ export class GiftList implements OnInit {
           name: this.giftName,
           price: this.giftPrice,
           storeName: this.storeName || undefined,
-          url: this.url || undefined
+          url: this.url || undefined,
+          imageUrl: this.imageUrl || undefined
         });
       } else {
         // Add new gift
@@ -99,7 +103,8 @@ export class GiftList implements OnInit {
           price: this.giftPrice,
           recipientId: this.recipientId,
           storeName: this.storeName || undefined,
-          url: this.url || undefined
+          url: this.url || undefined,
+          imageUrl: this.imageUrl || undefined
         };
 
         this.budgetService.addGift(this.recipientId, newGift);
@@ -150,7 +155,7 @@ export class GiftList implements OnInit {
     }
   }
 
-  sendMessage() {
+  async sendMessage() {
     if (!this.userInput.trim() || !this.recipient) return;
 
     // Add user message
@@ -166,13 +171,38 @@ export class GiftList implements OnInit {
     const message = this.userInput;
     this.userInput = '';
 
+    // Add loading message
+    const loadingMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      type: 'bot',
+      text: 'Searching for gift suggestions...',
+      timestamp: new Date()
+    };
+    this.chatMessages.push(loadingMessage);
+
     // Generate bot response
-    setTimeout(() => {
+    try {
       if (this.recipient) {
-        const botResponse = this.chatService.generateGiftSuggestions(this.recipient, message);
-        this.chatMessages.push(botResponse);
+        const botResponse = await this.chatService.generateGiftSuggestions(this.recipient, message);
+        // Replace loading message with actual response
+        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
+        if (loadingIndex !== -1) {
+          this.chatMessages[loadingIndex] = botResponse;
+        }
       }
-    }, 500);
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
+      // Replace loading message with error
+      const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
+      if (loadingIndex !== -1) {
+        this.chatMessages[loadingIndex] = {
+          id: loadingMessage.id,
+          type: 'bot',
+          text: 'Sorry, I encountered an error while searching for gifts. Please try again.',
+          timestamp: new Date()
+        };
+      }
+    }
   }
 
   addSuggestedGift(suggestion: GiftSuggestion) {
@@ -182,7 +212,10 @@ export class GiftList implements OnInit {
       id: Date.now().toString(),
       name: suggestion.name,
       price: suggestion.estimatedPrice,
-      recipientId: this.recipientId
+      recipientId: this.recipientId,
+      storeName: suggestion.storeName,
+      url: suggestion.url,
+      imageUrl: suggestion.imageUrl
     };
 
     this.budgetService.addGift(this.recipientId, newGift);
