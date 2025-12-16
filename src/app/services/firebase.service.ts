@@ -20,6 +20,17 @@ export class FirebaseService {
 
   private usersCollection = collection(this.firestore, 'users');
 
+  // Helper method to remove undefined values from objects
+  private removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+    const clean: any = {};
+    Object.keys(obj).forEach(key => {
+      if (obj[key] !== undefined) {
+        clean[key] = obj[key];
+      }
+    });
+    return clean;
+  }
+
   // Authentication methods
   getCurrentUser(): User | null {
     return this.auth.currentUser;
@@ -73,18 +84,20 @@ export class FirebaseService {
   async addRecipient(userId: string, recipient: Recipient): Promise<void> {
     const recipientsCollection = collection(this.firestore, `users/${userId}/recipients`);
     const recipientDoc = doc(recipientsCollection, recipient.id);
-    await setDoc(recipientDoc, {
+    const cleanRecipient = this.removeUndefined({
       ...recipient,
       updatedAt: new Date(),
     });
+    await setDoc(recipientDoc, cleanRecipient);
   }
 
   async updateRecipient(userId: string, recipientId: string, updates: Partial<Recipient>): Promise<void> {
     const recipientDoc = doc(this.firestore, `users/${userId}/recipients/${recipientId}`);
-    await updateDoc(recipientDoc, {
+    const cleanUpdates = this.removeUndefined({
       ...updates,
       updatedAt: new Date(),
     });
+    await updateDoc(recipientDoc, cleanUpdates);
   }
 
   async getRecipients(userId: string): Promise<Recipient[]> {
@@ -98,11 +111,14 @@ export class FirebaseService {
       // Get gifts for this recipient
       const gifts = await this.getGifts(userId, recipientDoc.id);
 
+      // Calculate spent from actual gifts
+      const spent = gifts.reduce((sum, gift) => sum + gift.price, 0);
+
       recipients.push({
         id: recipientDoc.id,
         name: recipientData['name'],
         budget: recipientData['budget'],
-        spent: recipientData['spent'],
+        spent: spent,
         gifts: gifts,
         age: recipientData['age'],
         gender: recipientData['gender'],
@@ -121,11 +137,14 @@ export class FirebaseService {
       const recipientData = recipientSnapshot.data();
       const gifts = await this.getGifts(userId, recipientId);
 
+      // Calculate spent from actual gifts
+      const spent = gifts.reduce((sum, gift) => sum + gift.price, 0);
+
       return {
         id: recipientSnapshot.id,
         name: recipientData['name'],
         budget: recipientData['budget'],
-        spent: recipientData['spent'],
+        spent: spent,
         gifts: gifts,
         age: recipientData['age'],
         gender: recipientData['gender'],
@@ -139,18 +158,20 @@ export class FirebaseService {
   async addGift(userId: string, recipientId: string, gift: Gift): Promise<void> {
     const giftsCollection = collection(this.firestore, `users/${userId}/recipients/${recipientId}/gifts`);
     const giftDoc = doc(giftsCollection, gift.id);
-    await setDoc(giftDoc, {
+    const cleanGift = this.removeUndefined({
       ...gift,
       updatedAt: new Date(),
     });
+    await setDoc(giftDoc, cleanGift);
   }
 
   async updateGift(userId: string, recipientId: string, giftId: string, updates: Partial<Gift>): Promise<void> {
     const giftDoc = doc(this.firestore, `users/${userId}/recipients/${recipientId}/gifts/${giftId}`);
-    await updateDoc(giftDoc, {
+    const cleanUpdates = this.removeUndefined({
       ...updates,
       updatedAt: new Date(),
     });
+    await updateDoc(giftDoc, cleanUpdates);
   }
 
   async deleteGift(userId: string, recipientId: string, giftId: string): Promise<void> {
