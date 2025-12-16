@@ -1,4 +1,4 @@
-import { Component, OnInit, computed } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -79,13 +79,13 @@ export class GiftList implements OnInit {
     this.showModal = true;
   }
 
-  addGift(event: Event) {
+  async addGift(event: Event) {
     event.preventDefault();
 
     if (this.giftName && this.giftPrice !== null && this.giftPrice > 0 && this.recipientId) {
       if (this.isEditMode && this.editingGiftId) {
         // Update existing gift
-        this.budgetService.updateGift(this.recipientId, this.editingGiftId, {
+        await this.budgetService.updateGift(this.recipientId, this.editingGiftId, {
           name: this.giftName,
           price: this.giftPrice,
           storeName: this.storeName || undefined,
@@ -102,7 +102,7 @@ export class GiftList implements OnInit {
           url: this.url || undefined
         };
 
-        this.budgetService.addGift(this.recipientId, newGift);
+        await this.budgetService.addGift(this.recipientId, newGift);
       }
 
       // Refresh recipient data
@@ -115,9 +115,9 @@ export class GiftList implements OnInit {
     }
   }
 
-  deleteGift(giftId: string) {
+  async deleteGift(giftId: string) {
     if (this.recipientId && confirm('Are you sure you want to delete this gift?')) {
-      this.budgetService.deleteGift(this.recipientId, giftId);
+      await this.budgetService.deleteGift(this.recipientId, giftId);
 
       // Refresh recipient data
       this.recipient = this.budgetService.getRecipientById(this.recipientId);
@@ -175,7 +175,7 @@ export class GiftList implements OnInit {
     }, 500);
   }
 
-  addSuggestedGift(suggestion: GiftSuggestion) {
+  async addSuggestedGift(suggestion: GiftSuggestion) {
     if (!this.recipientId) return;
 
     const newGift: Gift = {
@@ -185,7 +185,7 @@ export class GiftList implements OnInit {
       recipientId: this.recipientId
     };
 
-    this.budgetService.addGift(this.recipientId, newGift);
+    await this.budgetService.addGift(this.recipientId, newGift);
 
     // Refresh recipient data
     this.recipient = this.budgetService.getRecipientById(this.recipientId);
