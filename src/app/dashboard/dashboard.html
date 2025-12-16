@@ -41,30 +41,39 @@
       <h2 class="recipients-title">Recipients</h2>
       <div class="recipients-list">
         <div class="recipient-card" *ngFor="let recipient of budgetService.recipients()">
-          <div class="recipient-header">
-            <h3 class="recipient-name">{{ recipient.name }}</h3>
-            <div class="recipient-actions">
-              <button class="btn-edit" (click)="editRecipient(recipient.id)" title="Edit">
-                ✏️
-              </button>
-              <button class="btn-delete" (click)="deleteRecipient(recipient.id)" title="Delete">
-                🗑️
-              </button>
+          <div class="recipient-clickable" (click)="viewGiftList(recipient.id)">
+            <div class="recipient-header">
+              <h3 class="recipient-name">{{ recipient.name }}</h3>
+              <div class="recipient-actions" (click)="$event.stopPropagation()">
+                <button class="btn-edit" (click)="editRecipient(recipient.id)" title="Edit">
+                  ✏️
+                </button>
+                <button class="btn-delete" (click)="deleteRecipient(recipient.id)" title="Delete">
+                  🗑️
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="recipient-budget-row">
-            <span class="budget-label">Budget:</span>
-            <span class="recipient-budget">${{ recipient.budget.toFixed(2) }}</span>
-          </div>
-          <div class="recipient-spent">
-            <span class="spent-label">Spent:</span>
-            <span class="spent-value">${{ recipient.spent.toFixed(2) }}</span>
-          </div>
-          <div class="recipient-progress-bar">
-            <div
-              class="recipient-progress-fill"
-              [style.width.%]="recipient.budget > 0 ? (recipient.spent / recipient.budget) * 100 : 0"
-              [class.over-budget]="recipient.spent > recipient.budget">
+            <div class="budget-info">
+              <div class="budget-amounts">
+                <span class="spent">${{ recipient.spent.toFixed(2) }}</span>
+                <span class="total">/ ${{ recipient.budget.toFixed(2) }}</span>
+              </div>
+              <div class="budget-percentage">{{ recipient.budget > 0 ? (recipient.spent / recipient.budget * 100).toFixed(0) : 0 }}% used</div>
+            </div>
+
+            <div class="progress-bar-container">
+              <div
+                class="progress-bar-fill"
+                [style.width.%]="recipient.budget > 0 ? (recipient.spent / recipient.budget) * 100 : 0"
+                [class.over-budget]="recipient.spent > recipient.budget">
+              </div>
+            </div>
+
+            <div class="budget-remaining">
+              <span class="remaining-label">Remaining:</span>
+              <span class="remaining-amount" [class.negative]="(recipient.budget - recipient.spent) < 0">
+                ${{ (recipient.budget - recipient.spent).toFixed(2) }}
+              </span>
             </div>
           </div>
         </div>

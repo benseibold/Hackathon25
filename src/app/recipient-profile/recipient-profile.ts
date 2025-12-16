@@ -35,8 +35,9 @@ export class RecipientProfile implements OnInit {
       if (recipient) {
         this.name = recipient.name;
         this.budget = recipient.budget;
-        // Note: age, gender, and interests are not stored in the current Recipient interface
-        // They would need to be added to the interface to support editing these fields
+        this.age = recipient.age || null;
+        this.gender = recipient.gender || '';
+        this.interests = recipient.interests || '';
       } else {
         // Recipient not found, redirect to dashboard
         this.router.navigate(['/dashboard']);
@@ -52,7 +53,10 @@ export class RecipientProfile implements OnInit {
         // Update existing recipient
         this.budgetService.updateRecipient(this.recipientId, {
           name: this.name,
-          budget: this.budget
+          budget: this.budget,
+          age: this.age || undefined,
+          gender: this.gender || undefined,
+          interests: this.interests || undefined
         });
       } else {
         // Add new recipient
@@ -60,7 +64,11 @@ export class RecipientProfile implements OnInit {
           id: Date.now().toString(),
           name: this.name,
           budget: this.budget,
-          spent: 0
+          spent: 0,
+          gifts: [],
+          age: this.age || undefined,
+          gender: this.gender || undefined,
+          interests: this.interests || undefined
         };
         this.budgetService.addRecipient(newRecipient);
       }
