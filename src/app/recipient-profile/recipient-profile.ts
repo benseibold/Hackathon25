@@ -49,6 +49,21 @@ export class RecipientProfile implements OnInit {
     event.preventDefault();
 
     if (this.name && this.budget !== null && this.budget > 0) {
+      // Calculate sum of all other recipient budgets
+      const otherRecipientsBudgetSum = this.budgetService.recipients()
+        .filter(r => r.id !== this.recipientId) // Exclude current recipient if editing
+        .reduce((sum, r) => sum + r.budget, 0);
+
+      // Calculate total if we add/update this recipient
+      const totalRecipientBudgets = otherRecipientsBudgetSum + this.budget;
+
+      // Check if it exceeds the total budget
+      if (totalRecipientBudgets > this.budgetService.totalBudget()) {
+        const excess = totalRecipientBudgets - this.budgetService.totalBudget();
+        alert(`Total budget exceeded by $${excess.toFixed(2)}`);
+        return;
+      }
+
       if (this.isEditMode && this.recipientId) {
         // Update existing recipient
         this.budgetService.updateRecipient(this.recipientId, {
