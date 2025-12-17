@@ -1,10 +1,30 @@
 <div class="sign-in-container">
-  <mat-card class="sign-in-card">
-    <mat-card-header>
-      <mat-card-title>Welcome to Christmas Budget Tracker</mat-card-title>
-    </mat-card-header>
+  <!-- Snowflakes animation -->
+  <div class="snowflakes">
+    @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track i) {
+      <div class="snowflake">❄</div>
+    }
+  </div>
 
-    <mat-card-content>
+  <!-- Christmas lights -->
+  <div class="christmas-lights">
+    @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track i) {
+      <div class="light"></div>
+    }
+  </div>
+
+  <div class="sign-in-card">
+    <div class="card-header">
+      <div class="ornament-decoration">
+        <div class="ornament ornament-red"></div>
+        <div class="ornament ornament-green"></div>
+        <div class="ornament ornament-gold"></div>
+      </div>
+      <h1 class="card-title">Welcome to Christmas Budget Tracker</h1>
+      <p class="card-subtitle">Track your holiday gift-giving with joy! 🎄</p>
+    </div>
+
+    <div class="card-content">
       <mat-tab-group>
         <mat-tab label="Sign In">
           <div class="tab-content">
@@ -35,9 +55,7 @@
             }
 
             <button
-              mat-raised-button
-              color="primary"
-              class="full-width"
+              class="sign-in-button"
               (click)="signInWithEmail()"
               [disabled]="isLoading()"
             >
@@ -75,9 +93,7 @@
             }
 
             <button
-              mat-raised-button
-              color="primary"
-              class="full-width"
+              class="sign-in-button"
               (click)="signUpWithEmail()"
               [disabled]="isLoading()"
             >
@@ -86,20 +102,6 @@
           </div>
         </mat-tab>
       </mat-tab-group>
-
-      <div class="divider">
-        <span>OR</span>
-      </div>
-
-      <button
-        mat-raised-button
-        color="accent"
-        class="full-width"
-        (click)="signInAnonymously()"
-        [disabled]="isLoading()"
-      >
-        {{ isLoading() ? 'Signing in...' : 'Continue as Guest' }}
-      </button>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>
