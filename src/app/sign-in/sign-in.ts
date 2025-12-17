@@ -31,19 +31,6 @@ export class SignIn {
   errorMessage = signal('');
   isLoading = signal(false);
 
-  async signInAnonymously() {
-    try {
-      this.isLoading.set(true);
-      this.errorMessage.set('');
-      const user = await this.firebaseService.signInAnonymously();
-      await this.checkUserProfileAndRoute(user);
-    } catch (error: any) {
-      this.errorMessage.set(error.message || 'Failed to sign in anonymously');
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
   async signInWithEmail() {
     try {
       this.isLoading.set(true);

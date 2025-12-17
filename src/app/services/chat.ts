@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Recipient } from './budget';
+import { environment } from '../../environments/environment';
 
 export interface GiftSuggestion {
   name: string;
@@ -21,8 +22,10 @@ export interface ChatMessage {
   providedIn: 'root',
 })
 export class Chat {
-  private readonly ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your API key
-  private readonly API_URL = 'https://api.anthropic.com/v1/messages';
+  private readonly OPENAI_API_KEY = environment.openaiApiKey;
+  // Using local proxy server to avoid CORS issues
+  // Make sure to run: npm run proxy
+  private readonly API_URL = 'http://localhost:3000/api/gift-suggestions';
 
   async generateGiftSuggestions(recipient: Recipient, userMessage?: string): Promise<ChatMessage> {
     let responseText = '';
@@ -49,42 +52,64 @@ export class Chat {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': this.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
+          'Authorization': `Bearer ${this.OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 2048,
-          messages: [{
-            role: 'user',
-            content: `Search the web for "${searchQuery}" and provide exactly 5 specific gift product suggestions with real prices, store names, URLs, and product image URLs. Format your response as a JSON array with this structure:
-[
-  {
-    "name": "Product name",
-    "estimatedPrice": price_as_number,
-    "storeName": "Store name",
-    "url": "Product URL",
-    "imageUrl": "Product image URL"
-  }
-]
-
-Make sure to find real products that are currently available for purchase online with actual product images. Only respond with the JSON array, nothing else.`
-          }]
+          model: 'gpt-5.2',
+          messages: [
+            {
+              role: 'system',
+              content: 'you are a helpful assistant that returns exact valid json with no extra text unless part of the json'
+            },
+            {
+              role: 'user',
+              content: userMessage
+                ? `a user entered the following message into a chat box - ${userMessage} now with the users message give me 10 gift suggestions under $${budget} that actually exist online (dont limit to amazon) in json under the budget. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`
+                : `give me 10 gift suggestions under $${budget} that actually exist online (dont limit to amazon) in json under the budget. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`
+            }
+          ],
+          temperature: 0.7,
+          //max_tokens: 1000  // Limit tokens for faster response
         })
       });
 
       if (!response.ok) {
-        throw new Error('API call failed');
+        const errorData = await response.json();
+        console.error('OpenAI API error:', errorData);
+        throw new Error(`API call failed: ${response.status}`);
       }
 
       const data = await response.json();
-      const content = data.content[0].text;
+      let content = data.choices[0].message.content.trim();
+
+      // Remove markdown code blocks if present
+      content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
       // Parse the JSON response
-      const suggestions: GiftSuggestion[] = JSON.parse(content);
+      let parsedContent;
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (e) {
+        console.error('Failed to parse JSON:', content);
+        throw new Error('Invalid JSON response from API');
+      }
 
-      // Limit to 5 suggestions
-      const finalSuggestions = suggestions.slice(0, 5);
+      // Handle if response is wrapped in an object
+      const suggestions: GiftSuggestion[] = Array.isArray(parsedContent)
+        ? parsedContent
+        : (parsedContent.suggestions || parsedContent.gifts || parsedContent.products || []);
+
+      // Filter to only include products that are actually available (have valid URL and price)
+      const availableProducts = suggestions.filter(product =>
+        product.name &&
+        product.estimatedPrice > 0 &&
+        product.url &&
+        product.url.startsWith('http') &&
+        product.storeName
+      );
+
+      // Limit to first 10 available products
+      const finalSuggestions = availableProducts.slice(0, 10);
 
       responseText = `I found these gift suggestions for ${recipient.name}:`;
 
