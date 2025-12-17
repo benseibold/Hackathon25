@@ -54,12 +54,24 @@
               <div class="error-message">{{ errorMessage() }}</div>
             }
 
+            @if (successMessage()) {
+              <div class="success-message">{{ successMessage() }}</div>
+            }
+
             <button
               class="sign-in-button"
               (click)="signInWithEmail()"
               [disabled]="isLoading()"
             >
               {{ isLoading() ? 'Signing in...' : 'Sign In' }}
+            </button>
+
+            <button
+              class="forgot-password-link"
+              (click)="forgotPassword()"
+              type="button"
+            >
+              Forgot Password?
             </button>
           </div>
         </mat-tab>
@@ -96,6 +108,17 @@
                 [(ngModel)]="password"
                 [disabled]="isLoading()"
                 placeholder="Create a password"
+              />
+            </mat-form-field>
+
+            <mat-form-field class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="confirmPassword"
+                [disabled]="isLoading()"
+                placeholder="Re-enter your password"
               />
             </mat-form-field>
 

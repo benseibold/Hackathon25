@@ -134,11 +134,24 @@ export class GiftList implements OnInit {
 
   async togglePurchased(gift: Gift) {
     if (this.recipientId && this.recipient) {
+      // Add a small delay to allow CSS transition to play
+      const giftElement = document.getElementById(`gift-${gift.id}`);
+      if (giftElement && !gift.purchased) {
+        // Item is being marked as purchased - add moving class
+        giftElement.classList.add('gift-moving-down');
+
+        // Wait for animation to complete
+        await new Promise(resolve => setTimeout(resolve, 400));
+      }
+
       // Update local state immediately for instant UI feedback
       const updatedGifts = this.recipient.gifts.map(g =>
         g.id === gift.id ? { ...g, purchased: !g.purchased } : g
       );
       this.recipient = { ...this.recipient, gifts: updatedGifts };
+
+      // Force change detection to trigger re-sort
+      this.cdr.detectChanges();
 
       // Update in budget service and Firebase
       await this.budgetService.updateGift(this.recipientId, gift.id, {
@@ -199,6 +212,16 @@ export class GiftList implements OnInit {
 
   formatCurrency(value: number): string {
     return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  getSortedGifts(): Gift[] {
+    if (!this.recipient) return [];
+
+    // Sort gifts: unpurchased first, then purchased
+    return [...this.recipient.gifts].sort((a, b) => {
+      if (a.purchased === b.purchased) return 0;
+      return a.purchased ? 1 : -1;
+    });
   }
 
   async toggleChat() {

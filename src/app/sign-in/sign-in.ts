@@ -29,8 +29,10 @@ export class SignIn {
   firstName = signal('');
   email = signal('');
   password = signal('');
+  confirmPassword = signal('');
   budget = signal<number>(0);
   errorMessage = signal('');
+  successMessage = signal('');
   isLoading = signal(false);
 
   async signInWithEmail() {
@@ -58,6 +60,18 @@ export class SignIn {
         return;
       }
 
+      if (!this.password().trim()) {
+        this.errorMessage.set('Please enter a password');
+        this.isLoading.set(false);
+        return;
+      }
+
+      if (this.password() !== this.confirmPassword()) {
+        this.errorMessage.set('Passwords do not match');
+        this.isLoading.set(false);
+        return;
+      }
+
       if (this.budget() <= 0) {
         this.errorMessage.set('Please enter a valid budget amount');
         this.isLoading.set(false);
@@ -75,6 +89,23 @@ export class SignIn {
       this.errorMessage.set(error.message || 'Failed to sign up');
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async forgotPassword() {
+    try {
+      this.errorMessage.set('');
+      this.successMessage.set('');
+
+      if (!this.email().trim()) {
+        this.errorMessage.set('Please enter your email address');
+        return;
+      }
+
+      await this.firebaseService.resetPassword(this.email());
+      this.successMessage.set('Password reset email sent! Please check your inbox.');
+    } catch (error: any) {
+      this.errorMessage.set(error.message || 'Failed to send password reset email');
     }
   }
 
