@@ -36,9 +36,6 @@
     <div class="header">
       <button class="back-btn" (click)="backToDashboard()">← Back</button>
       <h1 class="page-title">{{ recipient.name }}'s Gift List</h1>
-      <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
-        +
-      </button>
     </div>
 
     <div class="budget-summary">
@@ -67,7 +64,12 @@
     </div>
 
     <div class="gifts-section" *ngIf="recipient.gifts.length > 0">
-      <h2 class="section-title">Gift List</h2>
+      <div class="section-header">
+        <h2 class="section-title">Gift List</h2>
+        <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
+          +
+        </button>
+      </div>
       <div class="gifts-list">
         <div class="gift-card" *ngFor="let gift of recipient.gifts">
           <img *ngIf="gift.imageUrl" [src]="gift.imageUrl" [alt]="gift.name" class="gift-image" />
@@ -92,7 +94,13 @@
     </div>
 
     <div class="empty-state" *ngIf="recipient.gifts.length === 0">
-      <p class="empty-message">🎁 No gifts added yet. Add your first gift above!</p>
+      <div class="section-header">
+        <h2 class="section-title">Gift List</h2>
+        <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
+          +
+        </button>
+      </div>
+      <p class="empty-message">🎁 No gifts added yet. Click + to add your first gift!</p>
     </div>
 
     <!-- Add/Edit Gift Modal -->

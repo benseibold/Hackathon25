@@ -11,6 +11,10 @@ import { Budget } from '../services/budget';
 })
 export class Dashboard implements OnInit {
   daysUntilChristmas = signal<number>(0);
+  hoursUntilChristmas = signal<number>(0);
+  minutesUntilChristmas = signal<number>(0);
+  secondsUntilChristmas = signal<number>(0);
+  private countdownInterval?: number;
 
   constructor(
     public budgetService: Budget,
@@ -19,6 +23,16 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.calculateDaysUntilChristmas();
+    // Update countdown every second
+    this.countdownInterval = window.setInterval(() => {
+      this.calculateDaysUntilChristmas();
+    }, 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
   }
 
   calculateDaysUntilChristmas() {
@@ -32,9 +46,16 @@ export class Dashboard implements OnInit {
     }
 
     const timeDiff = christmas.getTime() - today.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    this.daysUntilChristmas.set(daysDiff);
+    const days = Math.floor(timeDiff / (1000 * 3600 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 3600 * 24)) / (1000 * 3600));
+    const minutes = Math.floor((timeDiff % (1000 * 3600)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+    this.daysUntilChristmas.set(days);
+    this.hoursUntilChristmas.set(hours);
+    this.minutesUntilChristmas.set(minutes);
+    this.secondsUntilChristmas.set(seconds);
   }
 
   addRecipient() {
@@ -54,5 +75,9 @@ export class Dashboard implements OnInit {
 
   viewGiftList(id: string) {
     this.router.navigate(['/gift-list', id]);
+  }
+
+  formatCurrency(value: number): string {
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

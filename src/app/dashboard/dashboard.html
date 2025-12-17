@@ -36,10 +36,31 @@
     <div class="greeting-section">
       <h1 class="greeting">Hi, {{ budgetService.firstName() }}!</h1>
       <div class="christmas-countdown">
-        <div class="countdown-icon">🎄</div>
-        <div class="countdown-text">
-          <span class="countdown-number">{{ daysUntilChristmas() }}</span>
-          <span class="countdown-label">{{ daysUntilChristmas() === 1 ? 'day' : 'days' }} until Christmas!</span>
+        <div class="countdown-header">
+          <div class="countdown-icon">🎄</div>
+          <h2 class="countdown-title">Countdown to Christmas</h2>
+          <div class="countdown-icon">🎅</div>
+        </div>
+        <div class="countdown-clock">
+          <div class="time-unit">
+            <div class="time-value">{{ daysUntilChristmas() }}</div>
+            <div class="time-label">Days</div>
+          </div>
+          <div class="time-separator">:</div>
+          <div class="time-unit">
+            <div class="time-value">{{ hoursUntilChristmas().toString().padStart(2, '0') }}</div>
+            <div class="time-label">Hours</div>
+          </div>
+          <div class="time-separator">:</div>
+          <div class="time-unit">
+            <div class="time-value">{{ minutesUntilChristmas().toString().padStart(2, '0') }}</div>
+            <div class="time-label">Minutes</div>
+          </div>
+          <div class="time-separator">:</div>
+          <div class="time-unit">
+            <div class="time-value">{{ secondsUntilChristmas().toString().padStart(2, '0') }}</div>
+            <div class="time-label">Seconds</div>
+          </div>
         </div>
       </div>
     </div>
@@ -48,8 +69,8 @@
       <h2 class="budget-title">Total Budget</h2>
       <div class="budget-info">
         <div class="budget-amounts">
-          <span class="spent">${{ budgetService.totalSpent().toFixed(2) }}</span>
-          <span class="total">/ ${{ budgetService.totalBudget().toFixed(2) }}</span>
+          <span class="spent">${{ formatCurrency(budgetService.totalSpent()) }}</span>
+          <span class="total">/ ${{ formatCurrency(budgetService.totalBudget()) }}</span>
         </div>
         <div class="budget-percentage">{{ budgetService.budgetPercentageUsed().toFixed(0) }}% used</div>
       </div>
@@ -65,13 +86,18 @@
       <div class="budget-remaining">
         <span class="remaining-label">Remaining:</span>
         <span class="remaining-amount" [class.negative]="budgetService.budgetRemaining() < 0">
-          ${{ budgetService.budgetRemaining().toFixed(2) }}
+          ${{ formatCurrency(budgetService.budgetRemaining()) }}
         </span>
       </div>
     </div>
 
     <div class="recipients-section" *ngIf="budgetService.recipients().length > 0">
-      <h2 class="recipients-title">Recipients</h2>
+      <div class="section-header">
+        <h2 class="recipients-title">Recipients</h2>
+        <button class="btn-add-recipient-icon" (click)="addRecipient()" title="Add Recipient">
+          +
+        </button>
+      </div>
       <div class="recipients-list">
         <div class="recipient-card" *ngFor="let recipient of budgetService.recipients()">
           <div class="recipient-clickable" (click)="viewGiftList(recipient.id)">
@@ -88,8 +114,8 @@
             </div>
             <div class="budget-info">
               <div class="budget-amounts">
-                <span class="spent">${{ recipient.spent.toFixed(2) }}</span>
-                <span class="total">/ ${{ recipient.budget.toFixed(2) }}</span>
+                <span class="spent">${{ formatCurrency(recipient.spent) }}</span>
+                <span class="total">/ ${{ formatCurrency(recipient.budget) }}</span>
               </div>
               <div class="budget-percentage">{{ recipient.budget > 0 ? (recipient.spent / recipient.budget * 100).toFixed(0) : 0 }}% used</div>
             </div>
@@ -105,7 +131,7 @@
             <div class="budget-remaining">
               <span class="remaining-label">Remaining:</span>
               <span class="remaining-amount" [class.negative]="(recipient.budget - recipient.spent) < 0">
-                ${{ (recipient.budget - recipient.spent).toFixed(2) }}
+                ${{ formatCurrency(recipient.budget - recipient.spent) }}
               </span>
             </div>
           </div>
@@ -113,9 +139,14 @@
       </div>
     </div>
 
-    <button class="add-recipient-btn" (click)="addRecipient()">
-      <span class="btn-icon">+</span>
-      <span class="btn-text">Add Recipient</span>
-    </button>
+    <div class="empty-state" *ngIf="budgetService.recipients().length === 0">
+      <div class="section-header">
+        <h2 class="recipients-title">Recipients</h2>
+        <button class="btn-add-recipient-icon" (click)="addRecipient()" title="Add Recipient">
+          +
+        </button>
+      </div>
+      <p class="empty-message">🎁 No recipients added yet. Click + to add your first recipient!</p>
+    </div>
   </div>
 </div>
