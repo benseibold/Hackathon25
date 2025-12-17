@@ -193,6 +193,8 @@ export class FirebaseService {
         recipientId: recipientId,
         storeName: giftData['storeName'],
         url: giftData['url'],
+        imageUrl: giftData['imageUrl'],
+        purchased: giftData['purchased'],
       });
     });
 
@@ -212,6 +214,8 @@ export class FirebaseService {
         recipientId: recipientId,
         storeName: giftData['storeName'],
         url: giftData['url'],
+        imageUrl: giftData['imageUrl'],
+        purchased: giftData['purchased'],
       };
     }
 

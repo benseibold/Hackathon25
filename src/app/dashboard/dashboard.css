@@ -286,16 +286,26 @@
   overflow: hidden;
   margin-bottom: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  position: relative;
 }
 
-.progress-bar-fill {
+.progress-bar-purchased {
   height: 100%;
   background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
   transition: width 0.3s ease;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
 
-.progress-bar-fill.over-budget {
+.progress-bar-unpurchased {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.progress-bar-purchased.over-budget,
+.progress-bar-unpurchased.over-budget {
   background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }

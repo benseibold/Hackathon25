@@ -80,4 +80,64 @@ export class Dashboard implements OnInit {
   formatCurrency(value: number): string {
     return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
+
+  // Total budget calculations
+  getTotalPurchased(): number {
+    return this.budgetService.recipients().reduce((sum, recipient) => {
+      return sum + recipient.gifts.filter(g => g.purchased).reduce((gSum, g) => gSum + g.price, 0);
+    }, 0);
+  }
+
+  getTotalUnpurchased(): number {
+    return this.budgetService.recipients().reduce((sum, recipient) => {
+      return sum + recipient.gifts.filter(g => !g.purchased).reduce((gSum, g) => gSum + g.price, 0);
+    }, 0);
+  }
+
+  getTotalPurchasedPercentage(): number {
+    const totalBudget = this.budgetService.totalBudget();
+    if (totalBudget > 0) {
+      return (this.getTotalPurchased() / totalBudget) * 100;
+    }
+    return 0;
+  }
+
+  getTotalUnpurchasedPercentage(): number {
+    const totalBudget = this.budgetService.totalBudget();
+    if (totalBudget > 0) {
+      return (this.getTotalUnpurchased() / totalBudget) * 100;
+    }
+    return 0;
+  }
+
+  // Per-recipient calculations
+  getRecipientPurchased(recipientId: string): number {
+    const recipient = this.budgetService.recipients().find(r => r.id === recipientId);
+    if (recipient) {
+      return recipient.gifts.filter(g => g.purchased).reduce((sum, g) => sum + g.price, 0);
+    }
+    return 0;
+  }
+
+  getRecipientUnpurchased(recipientId: string): number {
+    const recipient = this.budgetService.recipients().find(r => r.id === recipientId);
+    if (recipient) {
+      return recipient.gifts.filter(g => !g.purchased).reduce((sum, g) => sum + g.price, 0);
+    }
+    return 0;
+  }
+
+  getRecipientPurchasedPercentage(recipientId: string, recipientBudget: number): number {
+    if (recipientBudget > 0) {
+      return (this.getRecipientPurchased(recipientId) / recipientBudget) * 100;
+    }
+    return 0;
+  }
+
+  getRecipientUnpurchasedPercentage(recipientId: string, recipientBudget: number): number {
+    if (recipientBudget > 0) {
+      return (this.getRecipientUnpurchased(recipientId) / recipientBudget) * 100;
+    }
+    return 0;
+  }
 }

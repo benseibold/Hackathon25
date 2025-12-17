@@ -132,6 +132,21 @@ export class GiftList implements OnInit {
     }
   }
 
+  async togglePurchased(gift: Gift) {
+    if (this.recipientId && this.recipient) {
+      // Update local state immediately for instant UI feedback
+      const updatedGifts = this.recipient.gifts.map(g =>
+        g.id === gift.id ? { ...g, purchased: !g.purchased } : g
+      );
+      this.recipient = { ...this.recipient, gifts: updatedGifts };
+
+      // Update in budget service and Firebase
+      await this.budgetService.updateGift(this.recipientId, gift.id, {
+        purchased: !gift.purchased
+      });
+    }
+  }
+
   backToDashboard() {
     this.router.navigate(['/dashboard']);
   }
@@ -146,6 +161,38 @@ export class GiftList implements OnInit {
   getBudgetPercentage(): number {
     if (this.recipient && this.recipient.budget > 0) {
       return (this.recipient.spent / this.recipient.budget) * 100;
+    }
+    return 0;
+  }
+
+  getPurchasedTotal(): number {
+    if (this.recipient) {
+      return this.recipient.gifts
+        .filter(g => g.purchased)
+        .reduce((sum, g) => sum + g.price, 0);
+    }
+    return 0;
+  }
+
+  getUnpurchasedTotal(): number {
+    if (this.recipient) {
+      return this.recipient.gifts
+        .filter(g => !g.purchased)
+        .reduce((sum, g) => sum + g.price, 0);
+    }
+    return 0;
+  }
+
+  getPurchasedPercentage(): number {
+    if (this.recipient && this.recipient.budget > 0) {
+      return (this.getPurchasedTotal() / this.recipient.budget) * 100;
+    }
+    return 0;
+  }
+
+  getUnpurchasedPercentage(): number {
+    if (this.recipient && this.recipient.budget > 0) {
+      return (this.getUnpurchasedTotal() / this.recipient.budget) * 100;
     }
     return 0;
   }

@@ -41,24 +41,23 @@
     <div class="budget-summary">
       <div class="budget-info">
         <div class="budget-amounts">
-          <span class="spent">${{ formatCurrency(recipient.spent) }}</span>
+          <span class="spent">${{ formatCurrency(getPurchasedTotal()) }}</span>
           <span class="total">/ ${{ formatCurrency(recipient.budget) }}</span>
         </div>
-        <div class="budget-percentage">{{ getBudgetPercentage().toFixed(0) }}% used</div>
       </div>
 
       <div class="progress-bar-container">
         <div
-          class="progress-bar-fill"
-          [style.width.%]="getBudgetPercentage()"
-          [class.over-budget]="getBudgetPercentage() > 100">
+          class="progress-bar-purchased"
+          [style.width.%]="getPurchasedPercentage()"
+          [class.over-budget]="getPurchasedPercentage() > 100">
         </div>
       </div>
 
       <div class="budget-remaining">
         <span class="remaining-label">Remaining:</span>
-        <span class="remaining-amount" [class.negative]="getRemainingBudget() < 0">
-          ${{ formatCurrency(getRemainingBudget()) }}
+        <span class="remaining-amount" [class.negative]="(recipient.budget - getPurchasedTotal()) < 0">
+          ${{ formatCurrency(recipient.budget - getPurchasedTotal()) }}
         </span>
       </div>
     </div>
@@ -71,7 +70,8 @@
         </button>
       </div>
       <div class="gifts-list">
-        <div class="gift-card" *ngFor="let gift of recipient.gifts">
+        <div class="gift-card" *ngFor="let gift of recipient.gifts" [class.purchased]="gift.purchased">
+          <img *ngIf="gift.imageUrl" [src]="gift.imageUrl" [alt]="gift.name" class="gift-image" />
           <div class="gift-info">
             <h3 class="gift-name">{{ gift.name }}</h3>
             <div class="gift-details">
@@ -81,6 +81,14 @@
             <a *ngIf="gift.url" [href]="gift.url" target="_blank" class="gift-url">View Product</a>
           </div>
           <div class="gift-actions">
+            <label class="purchased-checkbox">
+              <input
+                type="checkbox"
+                [checked]="gift.purchased"
+                (change)="togglePurchased(gift)"
+              />
+              <span class="checkbox-label">Purchased</span>
+            </label>
             <button class="btn-edit-gift" (click)="editGift(gift)" title="Edit">
               ✏️
             </button>

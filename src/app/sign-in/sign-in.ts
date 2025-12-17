@@ -81,15 +81,11 @@ export class SignIn {
   private async checkUserProfileAndRoute(user: User) {
 
     const userData = await this.firebaseService.getUserData(user.uid);
-    console.log(user);
-    console.log(userData);
     if (userData) {
       // User has existing profile, route to dashboard
-      console.log('dahsboard');
       this.router.navigate(['/dashboard']);
     } else {
       // New user, route to budget-input to create profile
-      console.log('budget');
       this.router.navigate(['/budget-input']);
     }
   }
