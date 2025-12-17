@@ -72,7 +72,6 @@
       </div>
       <div class="gifts-list">
         <div class="gift-card" *ngFor="let gift of recipient.gifts">
-          <img *ngIf="gift.imageUrl" [src]="gift.imageUrl" [alt]="gift.name" class="gift-image" />
           <div class="gift-info">
             <h3 class="gift-name">{{ gift.name }}</h3>
             <div class="gift-details">
@@ -213,12 +212,11 @@
       <div class="chat-messages">
         <div *ngFor="let message of chatMessages" class="message" [class.user-message]="message.type === 'user'" [class.bot-message]="message.type === 'bot'">
           <div class="message-bubble">
-            <p class="message-text">{{ message.text }}</p>
+            <p class="message-text" *ngIf="message.text">{{ message.text }}</p>
 
             <!-- Gift Suggestions -->
             <div *ngIf="message.suggestions && message.suggestions.length > 0" class="suggestions">
               <div *ngFor="let suggestion of message.suggestions" class="suggestion-item">
-                <img *ngIf="suggestion.imageUrl" [src]="suggestion.imageUrl" [alt]="suggestion.name" class="suggestion-image" />
                 <div class="suggestion-info">
                   <span class="suggestion-name">{{ suggestion.name }}</span>
                   <div class="suggestion-details">
@@ -233,6 +231,15 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator above input -->
+      <div *ngIf="isAITyping" class="typing-indicator-container">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
 

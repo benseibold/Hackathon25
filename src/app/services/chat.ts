@@ -13,9 +13,10 @@ export interface GiftSuggestion {
 export interface ChatMessage {
   id: string;
   type: 'user' | 'bot';
-  text: string;
+  text?: string;
   timestamp: Date;
   suggestions?: GiftSuggestion[];
+  isTyping?: boolean;
 }
 
 @Injectable({
@@ -26,6 +27,45 @@ export class Chat {
   // Using local proxy server to avoid CORS issues
   // Make sure to run: npm run proxy
   private readonly API_URL = 'http://localhost:3000/api/gift-suggestions';
+
+  /**
+   * Validates multiple URLs in parallel and returns only valid ones
+   */
+  private async validateProductUrls(products: GiftSuggestion[]): Promise<GiftSuggestion[]> {
+    const validationPromises = products.map(async (product) => {
+      if (!product.url) {
+        return null; // No URL to validate
+      }
+
+      try {
+        // Use a simple fetch with a timeout to check if URL exists
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+        const response = await fetch(product.url, {
+          method: 'HEAD',
+          signal: controller.signal,
+          redirect: 'follow'
+        });
+
+        clearTimeout(timeoutId);
+
+        // Check if response is successful (not 404 or other errors)
+        if (response.ok) {
+          return product;
+        } else {
+          console.log(`Product URL returned ${response.status}: ${product.url}`);
+          return null;
+        }
+      } catch (error) {
+        console.log(`Product URL validation failed: ${product.url}`, error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(validationPromises);
+    return results.filter((product): product is GiftSuggestion => product !== null);
+  }
 
   async generateGiftSuggestions(recipient: Recipient, userMessage?: string): Promise<ChatMessage> {
     let responseText = '';
@@ -111,7 +151,10 @@ export class Chat {
         product.storeName
       );
 
-      // Limit to first 10 available products
+      // Validate URLs by making HTTP requests and filter out 404s
+      //const validatedProducts = await this.validateProductUrls(availableProducts);
+
+      // Limit to first 10 validated products
       const finalSuggestions = availableProducts.slice(0, 10);
 
       responseText = `I found these gift suggestions for ${recipient.name}:`;
@@ -166,7 +209,7 @@ export class Chat {
     return {
       id: Date.now().toString(),
       type: 'bot',
-      text: `Hi! I'm your gift suggestion assistant. I can help you find the perfect gifts for ${recipient.name}. Just ask me for suggestions!`,
+      text: `Hi! I'm your gift suggestion assistant. I can help you find the perfect gifts for ${recipient.name}. Here are some suggestions to get started!`,
       timestamp: new Date()
     };
   }

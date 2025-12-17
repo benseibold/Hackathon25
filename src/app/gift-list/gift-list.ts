@@ -29,6 +29,7 @@ export class GiftList implements OnInit {
   chatMessages: ChatMessage[] = [];
   userInput = '';
   showChat = false;
+  isAITyping = false;
 
   constructor(
     private router: Router,
@@ -159,37 +160,26 @@ export class GiftList implements OnInit {
       // Add welcome message
       this.chatMessages.push(this.chatService.getWelcomeMessage(this.recipient));
 
-      // Automatically generate initial gift suggestions based on recipient info
-      const loadingMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        text: 'Let me find some perfect gift suggestions for you...',
-        timestamp: new Date()
-      };
-      this.chatMessages.push(loadingMessage);
-      this.cdr.detectChanges(); // Force UI update to show loading message
+      // Show typing indicator
+      this.isAITyping = true;
+      this.cdr.detectChanges(); // Force UI update to show typing indicator
 
       try {
         // Generate suggestions using the searchQuery (no userMessage)
         const botResponse = await this.chatService.generateGiftSuggestions(this.recipient);
-        // Replace loading message with actual response
-        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
-        if (loadingIndex !== -1) {
-          this.chatMessages[loadingIndex] = botResponse;
-        }
+        this.isAITyping = false;
+        this.chatMessages.push(botResponse);
         this.cdr.detectChanges(); // Force UI update to show suggestions
       } catch (error) {
         console.error('Error getting initial suggestions:', error);
-        // Replace loading message with error
-        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
-        if (loadingIndex !== -1) {
-          this.chatMessages[loadingIndex] = {
-            id: loadingMessage.id,
-            type: 'bot',
-            text: 'Sorry, I encountered an error while searching for gifts. Please try sending me a message to get suggestions.',
-            timestamp: new Date()
-          };
-        }
+        this.isAITyping = false;
+        // Add error message
+        this.chatMessages.push({
+          id: Date.now().toString(),
+          type: 'bot',
+          text: 'Sorry, I encountered an error while searching for gifts. Please try sending me a message to get suggestions.',
+          timestamp: new Date()
+        });
         this.cdr.detectChanges(); // Force UI update to show error
       }
     }
@@ -211,39 +201,27 @@ export class GiftList implements OnInit {
     const message = this.userInput;
     this.userInput = '';
 
-    // Add loading message
-    const loadingMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      type: 'bot',
-      text: 'Searching for gift suggestions...',
-      timestamp: new Date()
-    };
-    this.chatMessages.push(loadingMessage);
-    this.cdr.detectChanges(); // Force UI update to show loading message
+    // Show typing indicator
+    this.isAITyping = true;
+    this.cdr.detectChanges(); // Force UI update to show typing indicator
 
     // Generate bot response
     try {
       if (this.recipient) {
         const botResponse = await this.chatService.generateGiftSuggestions(this.recipient, message);
-        // Replace loading message with actual response
-        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
-        if (loadingIndex !== -1) {
-          this.chatMessages[loadingIndex] = botResponse;
-        }
+        this.isAITyping = false;
+        this.chatMessages.push(botResponse);
         this.cdr.detectChanges(); // Force UI update to show suggestions
       }
     } catch (error) {
       console.error('Error getting suggestions:', error);
-      // Replace loading message with error
-      const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
-      if (loadingIndex !== -1) {
-        this.chatMessages[loadingIndex] = {
-          id: loadingMessage.id,
-          type: 'bot',
-          text: 'Sorry, I encountered an error while searching for gifts. Please try again.',
-          timestamp: new Date()
-        };
-      }
+      this.isAITyping = false;
+      this.chatMessages.push({
+        id: Date.now().toString(),
+        type: 'bot',
+        text: 'Sorry, I encountered an error while searching for gifts. Please try again.',
+        timestamp: new Date()
+      });
       this.cdr.detectChanges(); // Force UI update to show error
     }
   }

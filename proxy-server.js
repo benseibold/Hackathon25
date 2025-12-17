@@ -52,7 +52,47 @@ app.post('/api/gift-suggestions', async (req, res) => {
   }
 });
 
+// URL validation endpoint
+app.post('/api/validate-url', async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ error: 'Missing URL parameter' });
+    }
+
+    console.log(`Validating URL: ${url}`);
+
+    // Make HEAD request to check if URL exists
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      redirect: 'follow'
+    });
+
+    clearTimeout(timeoutId);
+
+    const isValid = response.ok; // Returns true for 2xx status codes
+    console.log(`URL validation result: ${isValid} (status: ${response.status})`);
+
+    res.json({
+      valid: isValid,
+      status: response.status
+    });
+  } catch (error) {
+    console.error(`URL validation failed: ${error.message}`);
+    res.json({
+      valid: false,
+      error: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Proxy server running on http://localhost:${PORT}`);
   console.log(`Gift suggestions endpoint: http://localhost:${PORT}/api/gift-suggestions`);
+  console.log(`URL validation endpoint: http://localhost:${PORT}/api/validate-url`);
 });
