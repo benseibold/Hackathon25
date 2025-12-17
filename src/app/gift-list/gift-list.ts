@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -34,7 +34,8 @@ export class GiftList implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     public budgetService: Budget,
-    private chatService: Chat
+    private chatService: Chat,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -115,13 +116,14 @@ export class GiftList implements OnInit {
 
       // Close modal and clear form
       this.closeModal();
+      this.cdr.detectChanges(); // Force UI update to close modal
     } else {
       alert('Please enter a valid gift name and price.');
     }
   }
 
   async deleteGift(giftId: string) {
-    if (this.recipientId && confirm('Are you sure you want to delete this gift?')) {
+    if (this.recipientId) {
       await this.budgetService.deleteGift(this.recipientId, giftId);
 
       // Refresh recipient data
@@ -147,6 +149,10 @@ export class GiftList implements OnInit {
     return 0;
   }
 
+  formatCurrency(value: number): string {
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   async toggleChat() {
     this.showChat = !this.showChat;
     if (this.showChat && this.chatMessages.length === 0 && this.recipient) {
@@ -161,6 +167,7 @@ export class GiftList implements OnInit {
         timestamp: new Date()
       };
       this.chatMessages.push(loadingMessage);
+      this.cdr.detectChanges(); // Force UI update to show loading message
 
       try {
         // Generate suggestions using the searchQuery (no userMessage)
@@ -170,6 +177,7 @@ export class GiftList implements OnInit {
         if (loadingIndex !== -1) {
           this.chatMessages[loadingIndex] = botResponse;
         }
+        this.cdr.detectChanges(); // Force UI update to show suggestions
       } catch (error) {
         console.error('Error getting initial suggestions:', error);
         // Replace loading message with error
@@ -182,6 +190,7 @@ export class GiftList implements OnInit {
             timestamp: new Date()
           };
         }
+        this.cdr.detectChanges(); // Force UI update to show error
       }
     }
   }
@@ -210,6 +219,7 @@ export class GiftList implements OnInit {
       timestamp: new Date()
     };
     this.chatMessages.push(loadingMessage);
+    this.cdr.detectChanges(); // Force UI update to show loading message
 
     // Generate bot response
     try {
@@ -220,6 +230,7 @@ export class GiftList implements OnInit {
         if (loadingIndex !== -1) {
           this.chatMessages[loadingIndex] = botResponse;
         }
+        this.cdr.detectChanges(); // Force UI update to show suggestions
       }
     } catch (error) {
       console.error('Error getting suggestions:', error);
@@ -233,6 +244,7 @@ export class GiftList implements OnInit {
           timestamp: new Date()
         };
       }
+      this.cdr.detectChanges(); // Force UI update to show error
     }
   }
 

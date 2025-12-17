@@ -44,8 +44,8 @@
     <div class="budget-summary">
       <div class="budget-info">
         <div class="budget-amounts">
-          <span class="spent">${{ recipient.spent.toFixed(2) }}</span>
-          <span class="total">/ ${{ recipient.budget.toFixed(2) }}</span>
+          <span class="spent">${{ formatCurrency(recipient.spent) }}</span>
+          <span class="total">/ ${{ formatCurrency(recipient.budget) }}</span>
         </div>
         <div class="budget-percentage">{{ getBudgetPercentage().toFixed(0) }}% used</div>
       </div>
@@ -61,7 +61,7 @@
       <div class="budget-remaining">
         <span class="remaining-label">Remaining:</span>
         <span class="remaining-amount" [class.negative]="getRemainingBudget() < 0">
-          ${{ getRemainingBudget().toFixed(2) }}
+          ${{ formatCurrency(getRemainingBudget()) }}
         </span>
       </div>
     </div>
@@ -74,7 +74,7 @@
           <div class="gift-info">
             <h3 class="gift-name">{{ gift.name }}</h3>
             <div class="gift-details">
-              <span class="gift-price">${{ gift.price.toFixed(2) }}</span>
+              <span class="gift-price">${{ formatCurrency(gift.price) }}</span>
               <span class="gift-store" *ngIf="gift.storeName">{{ gift.storeName }}</span>
             </div>
             <a *ngIf="gift.url" [href]="gift.url" target="_blank" class="gift-url">View Product</a>
@@ -214,7 +214,7 @@
                 <div class="suggestion-info">
                   <span class="suggestion-name">{{ suggestion.name }}</span>
                   <div class="suggestion-details">
-                    <span class="suggestion-price">${{ suggestion.estimatedPrice.toFixed(2) }}</span>
+                    <span class="suggestion-price">${{ formatCurrency(suggestion.estimatedPrice) }}</span>
                     <span class="suggestion-store" *ngIf="suggestion.storeName">{{ suggestion.storeName }}</span>
                   </div>
                   <a *ngIf="suggestion.url" [href]="suggestion.url" target="_blank" class="suggestion-url">View Product</a>
