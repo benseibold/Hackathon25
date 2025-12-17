@@ -48,6 +48,11 @@ export class Chat {
     searchQuery += ` under $${budget}`;
 
     try {
+      // Use searchQuery when no user message is provided (initial load)
+      const promptContent = userMessage
+        ? `a user entered the following message into a chat box - ${userMessage} now with the users message give me 10 gift suggestions under $${budget} that actually exist online (dont limit to amazon) in json under the budget. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`
+        : `Based on this search query: "${searchQuery}", give me 10 gift suggestions that actually exist online (dont limit to amazon) in json format. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`;
+
       const response = await fetch(this.API_URL, {
         method: 'POST',
         headers: {
@@ -63,9 +68,7 @@ export class Chat {
             },
             {
               role: 'user',
-              content: userMessage
-                ? `a user entered the following message into a chat box - ${userMessage} now with the users message give me 10 gift suggestions under $${budget} that actually exist online (dont limit to amazon) in json under the budget. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`
-                : `give me 10 gift suggestions under $${budget} that actually exist online (dont limit to amazon) in json under the budget. with this structure [{"name":"Product","estimatedPrice":29.99,"storeName":"RetailerName","url":"https://retailer.com/product","imageUrl":"https://retailer.com/image.jpg"}]`
+              content: promptContent
             }
           ],
           temperature: 0.7,

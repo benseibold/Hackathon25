@@ -147,11 +147,42 @@ export class GiftList implements OnInit {
     return 0;
   }
 
-  toggleChat() {
+  async toggleChat() {
     this.showChat = !this.showChat;
     if (this.showChat && this.chatMessages.length === 0 && this.recipient) {
       // Add welcome message
       this.chatMessages.push(this.chatService.getWelcomeMessage(this.recipient));
+
+      // Automatically generate initial gift suggestions based on recipient info
+      const loadingMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        text: 'Let me find some perfect gift suggestions for you...',
+        timestamp: new Date()
+      };
+      this.chatMessages.push(loadingMessage);
+
+      try {
+        // Generate suggestions using the searchQuery (no userMessage)
+        const botResponse = await this.chatService.generateGiftSuggestions(this.recipient);
+        // Replace loading message with actual response
+        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
+        if (loadingIndex !== -1) {
+          this.chatMessages[loadingIndex] = botResponse;
+        }
+      } catch (error) {
+        console.error('Error getting initial suggestions:', error);
+        // Replace loading message with error
+        const loadingIndex = this.chatMessages.findIndex(m => m.id === loadingMessage.id);
+        if (loadingIndex !== -1) {
+          this.chatMessages[loadingIndex] = {
+            id: loadingMessage.id,
+            type: 'bot',
+            text: 'Sorry, I encountered an error while searching for gifts. Please try sending me a message to get suggestions.',
+            timestamp: new Date()
+          };
+        }
+      }
     }
   }
 

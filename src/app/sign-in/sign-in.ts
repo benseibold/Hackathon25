@@ -26,8 +26,10 @@ export class SignIn {
   private firebaseService = inject(FirebaseService);
   private router = inject(Router);
 
+  firstName = signal('');
   email = signal('');
   password = signal('');
+  budget = signal<number>(0);
   errorMessage = signal('');
   isLoading = signal(false);
 
@@ -48,8 +50,27 @@ export class SignIn {
     try {
       this.isLoading.set(true);
       this.errorMessage.set('');
+
+      // Validate inputs
+      if (!this.firstName().trim()) {
+        this.errorMessage.set('Please enter your first name');
+        this.isLoading.set(false);
+        return;
+      }
+
+      if (this.budget() <= 0) {
+        this.errorMessage.set('Please enter a valid budget amount');
+        this.isLoading.set(false);
+        return;
+      }
+
       const user = await this.firebaseService.signUpWithEmail(this.email(), this.password());
-      await this.checkUserProfileAndRoute(user);
+
+      // Save user data (name and budget) to Firestore
+      await this.firebaseService.saveUserData(user.uid, this.firstName(), this.budget());
+
+      // Route to dashboard since profile is now created
+      this.router.navigate(['/dashboard']);
     } catch (error: any) {
       this.errorMessage.set(error.message || 'Failed to sign up');
     } finally {
