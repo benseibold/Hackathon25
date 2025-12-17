@@ -1,4 +1,5 @@
-<div class="gift-list-container" *ngIf="recipient">
+@if (recipient) {
+<div class="gift-list-container">
   <!-- Snowflakes -->
   <div class="snowflakes">
     <div class="snowflake">❄</div>
@@ -41,29 +42,29 @@
     <div class="budget-summary">
       <div class="budget-info">
         <div class="budget-amounts">
-          <span class="spent">${{ formatCurrency(recipient.spent) }}</span>
+          <span class="spent">${{ formatCurrency(getPurchasedTotal()) }}</span>
           <span class="total">/ ${{ formatCurrency(recipient.budget) }}</span>
         </div>
-        <div class="budget-percentage">{{ getBudgetPercentage().toFixed(0) }}% used</div>
       </div>
 
       <div class="progress-bar-container">
         <div
-          class="progress-bar-fill"
-          [style.width.%]="getBudgetPercentage()"
-          [class.over-budget]="getBudgetPercentage() > 100">
+          class="progress-bar-purchased"
+          [style.width.%]="getPurchasedPercentage()"
+          [class.over-budget]="getPurchasedPercentage() > 100">
         </div>
       </div>
 
       <div class="budget-remaining">
         <span class="remaining-label">Remaining:</span>
-        <span class="remaining-amount" [class.negative]="getRemainingBudget() < 0">
-          ${{ formatCurrency(getRemainingBudget()) }}
+        <span class="remaining-amount" [class.negative]="(recipient.budget - getPurchasedTotal()) < 0">
+          ${{ formatCurrency(recipient.budget - getPurchasedTotal()) }}
         </span>
       </div>
     </div>
 
-    <div class="gifts-section" *ngIf="recipient.gifts.length > 0">
+    @if (recipient.gifts.length > 0) {
+    <div class="gifts-section">
       <div class="section-header">
         <h2 class="section-title">Gift List</h2>
         <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
@@ -71,16 +72,32 @@
         </button>
       </div>
       <div class="gifts-list">
-        <div class="gift-card" *ngFor="let gift of recipient.gifts">
+        @for (gift of getSortedGifts(); track gift.id) {
+        <div class="gift-card" [id]="'gift-' + gift.id" [class.purchased]="gift.purchased">
+          @if (gift.imageUrl) {
+          <img [src]="gift.imageUrl" [alt]="gift.name" class="gift-image" />
+          }
           <div class="gift-info">
             <h3 class="gift-name">{{ gift.name }}</h3>
             <div class="gift-details">
               <span class="gift-price">${{ formatCurrency(gift.price) }}</span>
-              <span class="gift-store" *ngIf="gift.storeName">{{ gift.storeName }}</span>
+              @if (gift.storeName) {
+              <span class="gift-store">{{ gift.storeName }}</span>
+              }
             </div>
-            <a *ngIf="gift.url" [href]="gift.url" target="_blank" class="gift-url">View Product</a>
+            @if (gift.url) {
+            <a [href]="gift.url" target="_blank" class="gift-url">View Product</a>
+            }
           </div>
           <div class="gift-actions">
+            <label class="purchased-checkbox">
+              <input
+                type="checkbox"
+                [checked]="gift.purchased"
+                (change)="togglePurchased(gift)"
+              />
+              <span class="checkbox-label">Purchased</span>
+            </label>
             <button class="btn-edit-gift" (click)="editGift(gift)" title="Edit">
               ✏️
             </button>
@@ -89,10 +106,13 @@
             </button>
           </div>
         </div>
+        }
       </div>
     </div>
+    }
 
-    <div class="empty-state" *ngIf="recipient.gifts.length === 0">
+    @if (recipient.gifts.length === 0) {
+    <div class="empty-state">
       <div class="section-header">
         <h2 class="section-title">Gift List</h2>
         <button class="btn-add-gift-icon" (click)="openModal()" title="Add Gift">
@@ -101,9 +121,11 @@
       </div>
       <p class="empty-message">🎁 No gifts added yet. Click + to add your first gift!</p>
     </div>
+    }
 
     <!-- Add/Edit Gift Modal -->
-    <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2 class="modal-title">{{ isEditMode ? 'Edit Gift' : 'Add New Gift' }}</h2>
@@ -196,6 +218,7 @@
         </form>
       </div>
     </div>
+    }
 
     <!-- Chat Toggle Button -->
     <button class="chat-toggle-btn" (click)="toggleChat()" [class.active]="showChat">
@@ -210,38 +233,52 @@
       </div>
 
       <div class="chat-messages">
-        <div *ngFor="let message of chatMessages" class="message" [class.user-message]="message.type === 'user'" [class.bot-message]="message.type === 'bot'">
+        @for (message of chatMessages; track message.id) {
+        <div class="message" [class.user-message]="message.type === 'user'" [class.bot-message]="message.type === 'bot'">
           <div class="message-bubble">
-            <p class="message-text" *ngIf="message.text">{{ message.text }}</p>
+            @if (message.text) {
+            <p class="message-text">{{ message.text }}</p>
+            }
 
             <!-- Gift Suggestions -->
-            <div *ngIf="message.suggestions && message.suggestions.length > 0" class="suggestions">
-              <div *ngFor="let suggestion of message.suggestions" class="suggestion-item">
+            @if (message.suggestions && message.suggestions.length > 0) {
+            <div class="suggestions">
+              @for (suggestion of message.suggestions; track suggestion.name) {
+              <div class="suggestion-item">
                 <div class="suggestion-info">
                   <span class="suggestion-name">{{ suggestion.name }}</span>
                   <div class="suggestion-details">
                     <span class="suggestion-price">${{ formatCurrency(suggestion.estimatedPrice) }}</span>
-                    <span class="suggestion-store" *ngIf="suggestion.storeName">{{ suggestion.storeName }}</span>
+                    @if (suggestion.storeName) {
+                    <span class="suggestion-store">{{ suggestion.storeName }}</span>
+                    }
                   </div>
-                  <a *ngIf="suggestion.url" [href]="suggestion.url" target="_blank" class="suggestion-url">View Product</a>
+                  @if (suggestion.url) {
+                  <a [href]="suggestion.url" target="_blank" class="suggestion-url">View Product</a>
+                  }
                 </div>
                 <button class="btn-add-suggestion" (click)="addSuggestedGift(suggestion)">
                   + Add to List
                 </button>
               </div>
+              }
             </div>
+            }
           </div>
         </div>
+        }
       </div>
 
       <!-- Typing Indicator above input -->
-      <div *ngIf="isAITyping" class="typing-indicator-container">
+      @if (isAITyping) {
+      <div class="typing-indicator-container">
         <div class="typing-indicator">
           <span></span>
           <span></span>
           <span></span>
         </div>
       </div>
+      }
 
       <div class="chat-input-container">
         <input
@@ -256,3 +293,4 @@
     </div>
   </div>
 </div>
+}

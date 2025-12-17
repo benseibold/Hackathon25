@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
   User,
   onAuthStateChanged,
 } from '@angular/fire/auth';
@@ -57,6 +58,10 @@ export class FirebaseService {
 
   async signOut(): Promise<void> {
     await signOut(this.auth);
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    await sendPasswordResetEmail(this.auth, email);
   }
 
   async saveUserData(userId: string, firstName: string, budget: number): Promise<void> {
@@ -193,6 +198,8 @@ export class FirebaseService {
         recipientId: recipientId,
         storeName: giftData['storeName'],
         url: giftData['url'],
+        imageUrl: giftData['imageUrl'],
+        purchased: giftData['purchased'],
       });
     });
 
@@ -212,6 +219,8 @@ export class FirebaseService {
         recipientId: recipientId,
         storeName: giftData['storeName'],
         url: giftData['url'],
+        imageUrl: giftData['imageUrl'],
+        purchased: giftData['purchased'],
       };
     }
 

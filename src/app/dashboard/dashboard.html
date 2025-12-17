@@ -69,24 +69,23 @@
       <h2 class="budget-title">Total Budget</h2>
       <div class="budget-info">
         <div class="budget-amounts">
-          <span class="spent">${{ formatCurrency(budgetService.totalSpent()) }}</span>
+          <span class="spent">${{ formatCurrency(getTotalPurchased()) }}</span>
           <span class="total">/ ${{ formatCurrency(budgetService.totalBudget()) }}</span>
         </div>
-        <div class="budget-percentage">{{ budgetService.budgetPercentageUsed().toFixed(0) }}% used</div>
       </div>
 
       <div class="progress-bar-container">
         <div
-          class="progress-bar-fill"
-          [style.width.%]="budgetService.budgetPercentageUsed()"
-          [class.over-budget]="budgetService.budgetPercentageUsed() > 100">
+          class="progress-bar-purchased"
+          [style.width.%]="getTotalPurchasedPercentage()"
+          [class.over-budget]="getTotalPurchasedPercentage() > 100">
         </div>
       </div>
 
       <div class="budget-remaining">
         <span class="remaining-label">Remaining:</span>
-        <span class="remaining-amount" [class.negative]="budgetService.budgetRemaining() < 0">
-          ${{ formatCurrency(budgetService.budgetRemaining()) }}
+        <span class="remaining-amount" [class.negative]="(budgetService.totalBudget() - getTotalPurchased()) < 0">
+          ${{ formatCurrency(budgetService.totalBudget() - getTotalPurchased()) }}
         </span>
       </div>
     </div>
@@ -114,24 +113,23 @@
             </div>
             <div class="budget-info">
               <div class="budget-amounts">
-                <span class="spent">${{ formatCurrency(recipient.spent) }}</span>
+                <span class="spent">${{ formatCurrency(getRecipientPurchased(recipient.id)) }}</span>
                 <span class="total">/ ${{ formatCurrency(recipient.budget) }}</span>
               </div>
-              <div class="budget-percentage">{{ recipient.budget > 0 ? (recipient.spent / recipient.budget * 100).toFixed(0) : 0 }}% used</div>
             </div>
 
             <div class="progress-bar-container">
               <div
-                class="progress-bar-fill"
-                [style.width.%]="recipient.budget > 0 ? (recipient.spent / recipient.budget) * 100 : 0"
-                [class.over-budget]="recipient.spent > recipient.budget">
+                class="progress-bar-purchased"
+                [style.width.%]="getRecipientPurchasedPercentage(recipient.id, recipient.budget)"
+                [class.over-budget]="getRecipientPurchased(recipient.id) > recipient.budget">
               </div>
             </div>
 
             <div class="budget-remaining">
               <span class="remaining-label">Remaining:</span>
-              <span class="remaining-amount" [class.negative]="(recipient.budget - recipient.spent) < 0">
-                ${{ formatCurrency(recipient.budget - recipient.spent) }}
+              <span class="remaining-amount" [class.negative]="(recipient.budget - getRecipientPurchased(recipient.id)) < 0">
+                ${{ formatCurrency(recipient.budget - getRecipientPurchased(recipient.id)) }}
               </span>
             </div>
           </div>

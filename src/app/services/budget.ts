@@ -9,6 +9,7 @@ export interface Gift {
   storeName?: string;
   url?: string;
   imageUrl?: string;
+  purchased?: boolean;
 }
 
 export interface Recipient {
